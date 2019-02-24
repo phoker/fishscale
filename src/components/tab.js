@@ -4,7 +4,7 @@ const Tab = styled.div`
   font-family: sans-serif;
   font-weight: lighter;
   font-size: 12px;
-  background: rgba(98, 0, 238, 1);
+  background: ${({ color }) => color};
   color: #FFFFFF;
   display: flex;
   align-content: center;

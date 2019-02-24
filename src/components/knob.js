@@ -4,7 +4,7 @@ import { animated } from 'react-spring'
 const knobSize = 10
 
 const Knob = styled(animated.div)`
-  background: rgba(98, 0, 238, 1);
+  background: ${({ color }) => color};
   position: absolute;
   width: ${knobSize}px;
   height: ${knobSize}px;
@@ -32,7 +32,6 @@ const Knob = styled(animated.div)`
     height: ${knobSize}px;
     top: 0;
     left: 0;
-    /* left: ${({ percent }) => `calc(${percent * 100}% - ${knobSize / 10}px)`}; */
     transform: scale(0);
     transition: transform 0.3s cubic-bezier(.4,0,.2,1),
     background-color 0.3s cubic-bezier(.4,0,.2,1);

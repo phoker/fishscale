@@ -7,7 +7,7 @@ const Track = styled(animated.div)`
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(98, 0, 238, 1);
+  background: ${({ color }) => color};
   transform-origin: left top;
   will-change: transform;
   transition: transform 0.1s ease-out;

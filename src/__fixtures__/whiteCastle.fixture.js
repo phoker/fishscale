@@ -9,7 +9,7 @@ const ExampleContainer = styled.div`
   align-items: center;
   justify-content: center;
 
-  background: yellow;
+  background: #00FFA2;
 `
 
 const Example = () => {
@@ -21,6 +21,7 @@ const Example = () => {
         <Scale
           value={value}
           onChange={onChange}
+          color='#004466'
         />
       </ExampleContainer>
       {value}

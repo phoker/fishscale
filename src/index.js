@@ -54,12 +54,13 @@ const useInitialPosition = (setPosition, initialPosition) => {
   return null
 }
 
-const Fishscale = ({
+const WhiteCastle = ({
   className,
   value,
   min,
   max,
   percentValue,
+  color,
   onChange: onChangeProp
 }) => {
   const containerRef = useRef()
@@ -83,6 +84,7 @@ const Fishscale = ({
       <Container
         className={className}
         ref={containerRef}
+        color={color}
         onClick={
           onClick(
             onChangeProp,
@@ -96,6 +98,7 @@ const Fishscale = ({
       >
         <Track
           {...bind()}
+          color={color}
           percent={normalizedValue}
           style={{
             transform: x.interpolate(getFillStyle(down, width, position))
@@ -103,6 +106,7 @@ const Fishscale = ({
         />
         <Knob
           {...bind()}
+          color={color}
           percent={normalizedValue}
           position={position}
           style={{
@@ -117,14 +121,20 @@ const Fishscale = ({
             )
           }}
         >
-          <Tab down={down} {...bind()} >
-            <span>{
-              Math.round(
-                percentValue
-                  ? getPercentage(position + x.getValue(), width)
-                  : denormalize(getPercentage(position + x.getValue(), width), min, max)
-              )}
-            </span>
+          <Tab
+            {...bind()}
+            color={color}
+            down={down}
+          >
+            {width && (
+              <span>{
+                Math.round(
+                  percentValue
+                    ? getPercentage(position + x.getValue(), width)
+                    : denormalize(getPercentage(position + x.getValue(), width), min, max)
+                )}
+              </span>
+            )}
           </Tab>
         </Knob>
       </Container>
@@ -132,8 +142,9 @@ const Fishscale = ({
   )
 }
 
-Fishscale.propTypes = {
+WhiteCastle.propTypes = {
   className: PropTypes.string,
+  color: PropTypes.string,
   value: PropTypes.number,
   min: PropTypes.number,
   max: PropTypes.number,
@@ -142,10 +153,11 @@ Fishscale.propTypes = {
   onChange: PropTypes.func
 }
 
-Fishscale.defaultProps = {
+WhiteCastle.defaultProps = {
+  color: '#6200EE',
   value: 0,
   min: 0,
   max: 100
 }
 
-export default memo(Fishscale)
+export default memo(WhiteCastle)
