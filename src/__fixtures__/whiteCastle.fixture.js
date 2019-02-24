@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
-import Scale from './../index'
+import Scale from '../index'
 
 const ExampleContainer = styled.div`
   width: 100%;
