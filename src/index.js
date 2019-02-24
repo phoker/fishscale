@@ -6,6 +6,7 @@ import useBoundingclientrect from '@rooks/use-boundingclientrect'
 
 import Knob from './components/knob'
 import Track from './components/track'
+import Tab from './components/tab'
 import Container from './components/container'
 import { usePrevious } from './constants'
 
@@ -58,6 +59,7 @@ const Fishscale = ({
   value,
   min,
   max,
+  percentValue,
   onChange: onChangeProp
 }) => {
   const containerRef = useRef()
@@ -114,7 +116,17 @@ const Fishscale = ({
               )
             )
           }}
-        />
+        >
+          <Tab down={down} {...bind()} >
+            <span>{
+              Math.round(
+                percentValue
+                  ? getPercentage(position + x.getValue(), width)
+                  : denormalize(getPercentage(position + x.getValue(), width), min, max)
+              )}
+            </span>
+          </Tab>
+        </Knob>
       </Container>
     </>
   )
@@ -125,6 +137,8 @@ Fishscale.propTypes = {
   value: PropTypes.number,
   min: PropTypes.number,
   max: PropTypes.number,
+  percentValue: PropTypes.bool,
+
   onChange: PropTypes.func
 }
 

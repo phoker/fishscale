@@ -10,7 +10,6 @@ const Knob = styled(animated.div)`
   height: ${knobSize}px;
   top: -${knobSize * 0.4}px;
   left: -${knobSize / 2}px;
-  /* left: ${({ percent }) => `calc(${percent * 100}% - ${knobSize / 2}px)`}; */
   z-index: 1;
   border-radius: 50%;
   user-select: none;
@@ -23,7 +22,7 @@ const Knob = styled(animated.div)`
   }
   &:focus, &:hover, &:active {
     &:before {
-      transform: scale(2);
+      transform: scale(3);
     }
   }
   &:before {
