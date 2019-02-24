@@ -1,19 +1,18 @@
 import styled from 'styled-components'
 import { animated } from 'react-spring'
-
-const knobSize = 10
+import { transparentize } from 'polished'
 
 const Knob = styled(animated.div)`
   background: ${({ color }) => color};
   position: absolute;
-  width: ${knobSize}px;
-  height: ${knobSize}px;
-  top: -${knobSize * 0.4}px;
-  left: -${knobSize / 2}px;
+  width: 10px;
+  height: 10px;
+  top: -4px;
+  left: -5px;
   z-index: 1;
   border-radius: 50%;
   user-select: none;
-  transition: transform 0.1s ease-out;
+  transition: transform 0s ease-out;
   transform: ${({ position }) => `translate3d(${position}px, 0, 0)`};
   cursor: move;
   cursor: grab;
@@ -26,15 +25,15 @@ const Knob = styled(animated.div)`
     }
   }
   &:before {
-    background: rgba(98, 0, 238, 0.25);
+    background: ${({ color }) => transparentize(0.75, color)};
     position: absolute;
-    width: ${knobSize}px;
-    height: ${knobSize}px;
+    width: 10px;
+    height: 10px;
     top: 0;
     left: 0;
     transform: scale(0);
-    transition: transform 0.3s cubic-bezier(.4,0,.2,1),
-    background-color 0.3s cubic-bezier(.4,0,.2,1);
+    transition: transform 0.1s cubic-bezier(.4, 0, .2, 1),
+    background-color 0.1s cubic-bezier(.4, 0, .2, 1);
     border-radius: 50%;
     opacity: ${({ down }) =>
     down
