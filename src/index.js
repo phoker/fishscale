@@ -10,11 +10,10 @@ import Tab from './components/tab'
 import Container from './components/container'
 import { usePrevious } from './constants'
 
-const onClick = (onChange, setPosition, width, getBoundingClientRect, min, max) => e => {
+const onClick = (onChangeProp, width, getBoundingClientRect) => e => {
   e.preventDefault()
-  const percent = getPercentage(e.pageX - getBoundingClientRect.left, width)
-  onChange(denormalize(percent, min, max))
-  setPosition(e.pageX - getBoundingClientRect.left)
+  const percent = getFraction(e.pageX - getBoundingClientRect.left, width)
+  onChangeProp(percent)
 }
 
 const getPosition = (x, currentPosition, min, max) => {
@@ -24,30 +23,27 @@ const getPosition = (x, currentPosition, min, max) => {
   return position
 }
 
-const getRatio = (position, width) => position / width
-
-const getPercentage = (position, width) => getRatio(position, width) * 100
+const getFraction = (position, width) => position / width
 
 const getFillStyle = (down, width, position) => x => {
-  if (x && down) return `scaleX(${getRatio(getPosition(x, position, 0, width), width)})`
+  if (x && down) return `scaleX(${getFraction(getPosition(x, position, 0, width), width)})`
 }
 
 const getTransformStyle = (down, prevDown, width, onChange, position) => x => {
   const currentPosition = getPosition(x, position, 0, width)
   if (x && !down && (down !== prevDown)) {
-    onChange(getPercentage(currentPosition, width), currentPosition)
+    onChange(getFraction(currentPosition, width))
   }
   if (x && down) return `translate3d(${currentPosition}px, 0, 0)`
 }
 
-const onChange = (onChangeProp, setPosition, min, max) => (value, position) => {
+const onChange = (onChangeProp, min, max) => value => {
   onChangeProp(denormalize(value, min, max))
-  setPosition(position)
 }
 
-const normalize = (value, min, max) => ((value - min) / (max - min)) * 100
+const normalize = (value, min, max) => ((value - min) / (max - min))
 
-const denormalize = (percent, min, max) => (((max - min) * (percent / 100)) + min)
+const denormalize = (percent, min, max) => (((max - min) * percent) + min)
 
 const useInitialPosition = (setPosition, initialPosition) => {
   useEffect(() => { setPosition(initialPosition) })
@@ -59,18 +55,21 @@ const WhiteCastle = ({
   value,
   min,
   max,
-  percentValue,
   color,
   onChange: onChangeProp
 }) => {
   const containerRef = useRef()
   const getBoundingClientRect = useBoundingclientrect(containerRef)
   const width = (getBoundingClientRect && getBoundingClientRect.width)
+
   const normalizedValue = normalize(value, min, max)
-  const initialPosition = (normalizedValue / 100) * width
-  const [ position, setPosition ] = useState(() => (normalizedValue / 100) * width)
+  const initialPosition = normalizedValue * width
+
+  const [ position, setPosition ] = useState(() => initialPosition)
+
   const [ down, setDown ] = useState(false)
   const prevDown = usePrevious(down)
+
   const [ { x }, set ] = useSpring(() => ({ x: 0, delay: 0 }))
   const bind = useGesture(({ down: gestureDown, delta: [ deltaX ] }) => {
     if (Math.abs(deltaX) > 1) setDown(gestureDown)
@@ -78,6 +77,7 @@ const WhiteCastle = ({
       x: gestureDown ? deltaX : 0
     })
   })
+
   useInitialPosition(setPosition, initialPosition)
   return (
     <>
@@ -87,12 +87,9 @@ const WhiteCastle = ({
         color={color}
         onClick={
           onClick(
-            onChangeProp,
-            setPosition,
+            onChange(onChangeProp, min, max),
             width,
-            getBoundingClientRect,
-            min,
-            max
+            getBoundingClientRect
           )
         }
       >
@@ -107,33 +104,28 @@ const WhiteCastle = ({
         <Knob
           {...bind()}
           color={color}
-          percent={normalizedValue}
           position={position}
+          down={down}
           style={{
             transform: x.interpolate(
               getTransformStyle(
                 down,
                 prevDown,
                 width,
-                onChange(onChangeProp, setPosition, min, max),
+                onChange(onChangeProp, min, max),
                 position
               )
             )
           }}
         >
           <Tab
-            {...bind()}
             color={color}
             down={down}
           >
             {width && (
-              <span>{
-                Math.round(
-                  percentValue
-                    ? getPercentage(position + x.getValue(), width)
-                    : denormalize(getPercentage(position + x.getValue(), width), min, max)
-                )}
-              </span>
+              <span>{Math.round(
+                denormalize(getFraction(position + x.getValue(), width), min, max)
+              )}</span>
             )}
           </Tab>
         </Knob>
