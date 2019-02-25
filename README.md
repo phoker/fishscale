@@ -4,14 +4,14 @@
 ## :sunglasses: INSTALL
 
 ```
-$ yarn add white-castle
+$ yarn add @phoker/white-castle
 ```
 
 ## :fire: USAGE
 
 ```
 import React, { useState } from 'react'
-import WhiteCastle from 'white-castle'
+import WhiteCastle from '@phoker/white-castle'
 
 const Example = () => {
   const [ value, setValue ] = useState(0)
