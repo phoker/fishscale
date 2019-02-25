@@ -12,7 +12,7 @@ const Tab = styled.div`
   align-items: center;
   justify-content: center;
   position: absolute;
-  transition: transform 0s ease-out;
+  transition: transform 0.1s ease-out;
   transform: ${({ down }) => `rotate(-45deg) scale(${down ? 1 : 0})`};
   width: 26px;
   height: 26px;

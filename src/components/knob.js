@@ -8,12 +8,11 @@ const Knob = styled(animated.div)`
   width: 10px;
   height: 10px;
   top: -4px;
-  left: -5px;
+  left: ${({ percent }) => `calc(${percent * 100}% - 5px)`};
   z-index: 1;
   border-radius: 50%;
   user-select: none;
-  transition: transform 0s ease-out;
-  transform: ${({ position }) => `translate3d(${position}px, 0, 0)`};
+  transition: left 0s ease-out;
   cursor: move;
   cursor: grab;
   &:active {
@@ -36,7 +35,7 @@ const Knob = styled(animated.div)`
     background-color 0.1s cubic-bezier(.4, 0, .2, 1);
     border-radius: 50%;
     opacity: ${({ down }) =>
-    down
+    down === 'true'
       ? '.2'
       : '.15'};
     content: "";

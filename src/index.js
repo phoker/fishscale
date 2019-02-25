@@ -23,18 +23,23 @@ const getPosition = (x, currentPosition, min, max) => {
   return position
 }
 
-const getFraction = (position, width) => position / width
+const getFraction = (position, width) => {
+  const fraction = position / width
+  if (fraction < 0) return 0
+  if (fraction > 1) return 1
+  return fraction
+}
 
 const getFillStyle = (down, width, position) => x => {
   if (x && down) return `scaleX(${getFraction(getPosition(x, position, 0, width), width)})`
 }
 
 const getTransformStyle = (down, prevDown, width, onChange, position) => x => {
-  const currentPosition = getPosition(x, position, 0, width)
+  const percent = getFraction(getPosition(x, position, 0, width), width)
   if (x && !down && (down !== prevDown)) {
-    onChange(getFraction(currentPosition, width))
+    onChange(percent)
   }
-  if (x && down) return `translate3d(${currentPosition}px, 0, 0)`
+  if (x && down) return `calc(${percent * 100}% - 5px)`
 }
 
 const onChange = (onChangeProp, min, max) => value => {
@@ -43,12 +48,7 @@ const onChange = (onChangeProp, min, max) => value => {
 
 const normalize = (value, min, max) => ((value - min) / (max - min))
 
-const denormalize = (percent, min, max) => (((max - min) * percent) + min)
-
-const useInitialPosition = (setPosition, initialPosition) => {
-  useEffect(() => { setPosition(initialPosition) })
-  return null
-}
+const denormalize = (percent, min, max) => Math.ceil((((max - min) * percent) + min))
 
 const WhiteCastle = ({
   className,
@@ -63,9 +63,11 @@ const WhiteCastle = ({
   const width = (getBoundingClientRect && getBoundingClientRect.width)
 
   const normalizedValue = normalize(value, min, max)
-  const initialPosition = normalizedValue * width
-
-  const [ position, setPosition ] = useState(() => initialPosition)
+  const currentPosition = normalizedValue * width
+  const [ position, setPosition ] = useState(() => currentPosition)
+  useEffect(() => {
+    setPosition(currentPosition)
+  }, [ value, currentPosition, width ])
 
   const [ down, setDown ] = useState(false)
   const prevDown = usePrevious(down)
@@ -77,8 +79,6 @@ const WhiteCastle = ({
       x: gestureDown ? deltaX : 0
     })
   })
-
-  useInitialPosition(setPosition, initialPosition)
   return (
     <>
       <Container
@@ -104,10 +104,11 @@ const WhiteCastle = ({
         <Knob
           {...bind()}
           color={color}
-          position={position}
-          down={down}
+          position={currentPosition}
+          percent={normalizedValue}
+          down={Boolean(down).toString()}
           style={{
-            transform: x.interpolate(
+            left: x.interpolate(
               getTransformStyle(
                 down,
                 prevDown,
@@ -123,9 +124,7 @@ const WhiteCastle = ({
             down={down}
           >
             {width && (
-              <span>{Math.round(
-                denormalize(getFraction(position + x.getValue(), width), min, max)
-              )}</span>
+              <span>{denormalize(getFraction(position + x.getValue(), width), min, max)}</span>
             )}
           </Tab>
         </Knob>
