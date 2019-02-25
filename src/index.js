@@ -48,7 +48,7 @@ const onChange = (onChangeProp, min, max) => value => {
 
 const normalize = (value, min, max) => ((value - min) / (max - min))
 
-const denormalize = (percent, min, max) => Math.ceil((((max - min) * percent) + min))
+const denormalize = (percent, min, max) => Math.round(((max - min) * percent) + min)
 
 const WhiteCastle = ({
   className,
