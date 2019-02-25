@@ -3,6 +3,7 @@ import PropTypes from 'prop-types'
 import { useSpring } from 'react-spring'
 import { useGesture } from 'react-with-gesture'
 import useBoundingclientrect from '@rooks/use-boundingclientrect'
+import useKey from '@rooks/use-key'
 
 import Knob from './components/knob'
 import Track from './components/track'
@@ -10,67 +11,80 @@ import Tab from './components/tab'
 import Container from './components/container'
 import { usePrevious } from './constants'
 
-const onClick = (onChange, setPosition, width, getBoundingClientRect, min, max) => e => {
+const onClick = (onChangeProp, width, getBoundingClientRect) => e => {
   e.preventDefault()
-  const percent = getPercentage(e.pageX - getBoundingClientRect.left, width)
-  onChange(denormalize(percent, min, max))
-  setPosition(e.pageX - getBoundingClientRect.left)
+  const percent = getFraction(e.pageX - getBoundingClientRect.left, width)
+  onChangeProp(percent)
+}
+
+const getBoundedValue = (value, min, max) => {
+  if (value < min) return min
+  if (value > max) return max
+  return value
 }
 
 const getPosition = (x, currentPosition, min, max) => {
   const position = currentPosition + x
-  if (position < min) return min
-  if (position > max) return max
-  return position
+  return getBoundedValue(position, min, max)
 }
 
-const getRatio = (position, width) => position / width
-
-const getPercentage = (position, width) => getRatio(position, width) * 100
+const getFraction = (position, width) => {
+  const fraction = position / width
+  return getBoundedValue(fraction, 0, 1)
+}
 
 const getFillStyle = (down, width, position) => x => {
-  if (x && down) return `scaleX(${getRatio(getPosition(x, position, 0, width), width)})`
+  if (x && down) return `scaleX(${getFraction(getPosition(x, position, 0, width), width)})`
 }
 
 const getTransformStyle = (down, prevDown, width, onChange, position) => x => {
-  const currentPosition = getPosition(x, position, 0, width)
+  const percent = getFraction(getPosition(x, position, 0, width), width)
   if (x && !down && (down !== prevDown)) {
-    onChange(getPercentage(currentPosition, width), currentPosition)
+    onChange(percent)
   }
-  if (x && down) return `translate3d(${currentPosition}px, 0, 0)`
+  if (x && down) return `calc(${percent * 100}% - 5px)`
 }
 
-const onChange = (onChangeProp, setPosition, min, max) => (value, position) => {
+const onChange = (onChangeProp, min, max) => value => {
   onChangeProp(denormalize(value, min, max))
-  setPosition(position)
 }
 
-const normalize = (value, min, max) => ((value - min) / (max - min)) * 100
-
-const denormalize = (percent, min, max) => (((max - min) * (percent / 100)) + min)
-
-const useInitialPosition = (setPosition, initialPosition) => {
-  useEffect(() => { setPosition(initialPosition) })
-  return null
+const onKeyDown = (value, min, max, onChangeProp) => e => {
+  e.preventDefault()
+  if (e.code === 'ArrowLeft' || e.code === 'ArrowDown') {
+    onChangeProp(getBoundedValue(value - 1, min, max))
+  }
+  if (e.code === 'ArrowRight' || e.code === 'ArrowUp') {
+    onChangeProp(getBoundedValue(value + 1, min, max))
+  }
 }
+
+const normalize = (value, min, max) => ((value - min) / (max - min))
+
+const denormalize = (percent, min, max) => Math.round(((max - min) * percent) + min)
 
 const WhiteCastle = ({
   className,
   value,
   min,
   max,
-  percentValue,
   color,
   onChange: onChangeProp
 }) => {
   const containerRef = useRef()
   const getBoundingClientRect = useBoundingclientrect(containerRef)
   const width = (getBoundingClientRect && getBoundingClientRect.width)
+
   const normalizedValue = normalize(value, min, max)
-  const initialPosition = (normalizedValue / 100) * width
-  const [ position, setPosition ] = useState(() => (normalizedValue / 100) * width)
+  const currentPosition = normalizedValue * width
+  const [ position, setPosition ] = useState(() => currentPosition)
+  useEffect(() => {
+    setPosition(currentPosition)
+  }, [ value, currentPosition, width ])
+
   const [ down, setDown ] = useState(false)
   const prevDown = usePrevious(down)
+
   const [ { x }, set ] = useSpring(() => ({ x: 0, delay: 0 }))
   const bind = useGesture(({ down: gestureDown, delta: [ deltaX ] }) => {
     if (Math.abs(deltaX) > 1) setDown(gestureDown)
@@ -78,7 +92,15 @@ const WhiteCastle = ({
       x: gestureDown ? deltaX : 0
     })
   })
-  useInitialPosition(setPosition, initialPosition)
+  useKey(
+    ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'],
+    onKeyDown(value, min, max, onChangeProp),
+    { eventTypes: ['keydown'] }
+  )
+  if (min >= max) {
+    console.warn('Minimum value is larger or equal to Maximum value; please enter valid min/max values')
+    return <div />
+  }
   return (
     <>
       <Container
@@ -87,12 +109,9 @@ const WhiteCastle = ({
         color={color}
         onClick={
           onClick(
-            onChangeProp,
-            setPosition,
+            onChange(onChangeProp, min, max),
             width,
-            getBoundingClientRect,
-            min,
-            max
+            getBoundingClientRect
           )
         }
       >
@@ -107,33 +126,27 @@ const WhiteCastle = ({
         <Knob
           {...bind()}
           color={color}
+          position={currentPosition}
           percent={normalizedValue}
-          position={position}
+          down={Boolean(down).toString()}
           style={{
-            transform: x.interpolate(
+            left: x.interpolate(
               getTransformStyle(
                 down,
                 prevDown,
                 width,
-                onChange(onChangeProp, setPosition, min, max),
+                onChange(onChangeProp, min, max),
                 position
               )
             )
           }}
         >
           <Tab
-            {...bind()}
             color={color}
             down={down}
           >
             {width && (
-              <span>{
-                Math.round(
-                  percentValue
-                    ? getPercentage(position + x.getValue(), width)
-                    : denormalize(getPercentage(position + x.getValue(), width), min, max)
-                )}
-              </span>
+              <span>{denormalize(getFraction(position + x.getValue(), width), min, max)}</span>
             )}
           </Tab>
         </Knob>
@@ -148,7 +161,6 @@ WhiteCastle.propTypes = {
   value: PropTypes.number,
   min: PropTypes.number,
   max: PropTypes.number,
-  percentValue: PropTypes.bool,
 
   onChange: PropTypes.func
 }

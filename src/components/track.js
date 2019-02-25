@@ -11,7 +11,7 @@ const Track = styled(animated.div)`
   transform-origin: left top;
   will-change: transform;
   transition: transform 0s ease-out;
-  transform: ${({ percent }) => `scaleX(${percent / 100})`};
+  transform: ${({ percent }) => `scaleX(${percent})`};
 `
 
 export default Track
