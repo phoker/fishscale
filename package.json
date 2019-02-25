@@ -39,6 +39,7 @@
     "@babel/plugin-external-helpers": "^7.2.0",
     "@babel/preset-env": "^7.3.1",
     "@rooks/use-boundingclientrect": "^1.1.0",
+    "@rooks/use-key": "^1.1.0",
     "babel-eslint": "^10.0.1",
     "babel-loader": "^8.0.5",
     "babel-plugin-styled-components": "^1.10.0",

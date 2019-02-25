@@ -3,6 +3,7 @@ import PropTypes from 'prop-types'
 import { useSpring } from 'react-spring'
 import { useGesture } from 'react-with-gesture'
 import useBoundingclientrect from '@rooks/use-boundingclientrect'
+import useKey from '@rooks/use-key'
 
 import Knob from './components/knob'
 import Track from './components/track'
@@ -16,18 +17,20 @@ const onClick = (onChangeProp, width, getBoundingClientRect) => e => {
   onChangeProp(percent)
 }
 
+const getBoundedValue = (value, min, max) => {
+  if (value < min) return min
+  if (value > max) return max
+  return value
+}
+
 const getPosition = (x, currentPosition, min, max) => {
   const position = currentPosition + x
-  if (position < min) return min
-  if (position > max) return max
-  return position
+  return getBoundedValue(position, min, max)
 }
 
 const getFraction = (position, width) => {
   const fraction = position / width
-  if (fraction < 0) return 0
-  if (fraction > 1) return 1
-  return fraction
+  return getBoundedValue(fraction, 0, 1)
 }
 
 const getFillStyle = (down, width, position) => x => {
@@ -44,6 +47,16 @@ const getTransformStyle = (down, prevDown, width, onChange, position) => x => {
 
 const onChange = (onChangeProp, min, max) => value => {
   onChangeProp(denormalize(value, min, max))
+}
+
+const onKeyDown = (value, min, max, onChangeProp) => e => {
+  e.preventDefault()
+  if (e.code === 'ArrowLeft' || e.code === 'ArrowDown') {
+    onChangeProp(getBoundedValue(value - 1, min, max))
+  }
+  if (e.code === 'ArrowRight' || e.code === 'ArrowUp') {
+    onChangeProp(getBoundedValue(value + 1, min, max))
+  }
 }
 
 const normalize = (value, min, max) => ((value - min) / (max - min))
@@ -79,6 +92,11 @@ const WhiteCastle = ({
       x: gestureDown ? deltaX : 0
     })
   })
+  useKey(
+    ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'],
+    onKeyDown(value, min, max, onChangeProp),
+    { eventTypes: ['keydown'] }
+  )
   return (
     <>
       <Container
