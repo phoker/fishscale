@@ -1,5 +1,5 @@
 # :hamburger: white-castle
-> a React slider that (kinda) doesnt suck
+> a React material themed slider that (kinda) doesnt suck
 
 ## :sunglasses: INSTALL
 
