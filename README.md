@@ -1,4 +1,4 @@
-# white-castle
+# :hamburger: white-castle
 > a React slider that (kinda) doesnt suck
 
 ## :sunglasses: INSTALL
@@ -28,7 +28,7 @@ const Example = () => {
 
 | Prop              | Type       | Default    | Description |
 |-------------------|------------|------------|-------------|
-| `value`           | _number_   | false      | Self-explanatory |
+| `value`           | _number_   | `0`      | Self-explanatory |
 | `onChange`        | _func_     | noOp       | Function to invoke when User uses the slider. |
 | `min`             | _number_   | `0`        | Self-explanatory |
 | `max`             | _number_   | `100`      | Self-explanatory |
