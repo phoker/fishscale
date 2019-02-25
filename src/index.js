@@ -97,6 +97,10 @@ const WhiteCastle = ({
     onKeyDown(value, min, max, onChangeProp),
     { eventTypes: ['keydown'] }
   )
+  if (min >= max) {
+    console.warn('Minimum value is larger or equal to Maximum value; please enter valid min/max values')
+    return <div />
+  }
   return (
     <>
       <Container
@@ -157,7 +161,6 @@ WhiteCastle.propTypes = {
   value: PropTypes.number,
   min: PropTypes.number,
   max: PropTypes.number,
-  percentValue: PropTypes.bool,
 
   onChange: PropTypes.func
 }
